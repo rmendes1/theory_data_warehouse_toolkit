@@ -34,8 +34,6 @@ Information is the most valuable asset in an organization and is handled in two 
 | 📊 Usage Pattern | Queries return sets of rows, not single records |
 | ❓ Usage Style | Users constantly change the questions they ask |
 
----
-
 ## ⚖️ Key Difference
 
 > There is a strong dichotomy between operational systems and data warehouses.
@@ -61,8 +59,6 @@ Information is the most valuable asset in an organization and is handled in two 
 - “It drives me crazy to have two people present the same business metrics at a meeting, but with different numbers.”
 - “We want people to use information to support more fact-based decision making.”
 
----
-
 ### ✅ Translating Needs into DW Requirements
 
 | 🎯 Goal | 📝 Description |
@@ -86,8 +82,6 @@ Being a Data Warehouse (DW) Manager is much like being the editor-in-chief of a 
 | 📚 Tailor Content | Learn what your readers want from the magazine |
 | 🌟 Focus on Value | Identify top readers—those who renew and engage |
 | 📣 Grow Readership | Attract new readers and increase awareness |
-
----
 
 ### 📊 What a DW Manager Does
 
@@ -127,7 +121,7 @@ Being a Data Warehouse (DW) Manager is much like being the editor-in-chief of a 
 | 🔧 Functionality | Standard SQL | Richer analytical capabilities |
 | 🕒 Load Performance | Faster loads | Slower with large datasets |
 
-<Image 1 Here>
+<img src="C1_image1.png"/>
 
 📝 Recommendation:
 
@@ -159,7 +153,7 @@ A fact represents a measurable business event.
 
 **Each fact table row corresponds to a single event in the real world, such as a sale or an order — a cornerstone concept in dimensional modeling.**
 
-<Image 2 here>
+<img src="C1_image2.png"/>
 
 ### **🧮 Types of Facts**
 
