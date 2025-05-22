@@ -87,7 +87,7 @@ Dimensional models are designed for resilience and easy extension:
 > “These changes can be implemented without altering existing BI queries or applications, and without changing query results.”
 > 
 
-### 🚦 Key Takeaways
+### 🚦 Key points
 
 - **Business-driven:** Always start with business requirements and realities.
 - **Collaborative:** Involve business and technical experts throughout.
@@ -95,5 +95,137 @@ Dimensional models are designed for resilience and easy extension:
 - **Consistent:** Declare and respect the grain.
 - **Flexible:** Design for easy extension and robust analysis.
 
-> 💡 “Dimensional modeling is absolutely critical to a successful data warehousing initiative.”
->
+## Basic Fact Table Techniques
+
+### 🏗️ Fact Table Structure
+
+- **Definition:**
+    - Stores numeric measures from real-world operational events.
+    - Each row = one measurement event (at the declared grain).
+- **Components:**
+    - Numeric facts (measures)
+    - Foreign keys to all associated dimensions
+    - Optional: degenerate dimension keys, date/time stamps
+- **Purpose:**
+    - Central target for computations and aggregations in BI queries.
+- **Design Principle:**
+    - Based on real events, not on report layouts.
+
+### ➕ Additive, Semi-Additive, Non-Additive Facts
+
+| **Type** | **Description** | **Example** | **Summable Across...** |
+| --- | --- | --- | --- |
+| **Additive** | Can be summed across all dimensions | Sales amount, Quantity | All dimensions |
+| **Semi-Additive** | Can be summed across some, but not all, dimensions | Account balance | Some (e.g., not time) |
+| **Non-Additive** | Cannot be summed across any dimension; often ratios or percentages | Profit margin, Rates | None |
+
+> 💡 Tip: For non-additive facts, store additive components and calculate the final value in the BI layer or OLAP cube.
+> 
+
+### 🚫 Nulls in Fact Tables
+
+- **Facts:**
+    - Nulls are handled gracefully by aggregate functions (SUM, COUNT, etc.).
+- **Foreign Keys:**
+    - Nulls are **not allowed** (would break referential integrity).
+    - Instead, use a default/“unknown” row in the dimension table with a surrogate key.
+
+### 🔗 Conformed Facts
+
+- **Definition:**
+    - Same measurement appears in multiple fact tables.
+- **Rule:**
+    - If definitions are identical, use the same name.
+    - If definitions differ, use different names to avoid confusion.
+- **Goal:**
+    - Ensure consistency and clarity for cross-table analysis.
+
+### 🧾 Transaction Fact Tables
+
+- **Grain:**
+    - One row per event at a point in space and time (atomic).
+- **Characteristics:**
+    - Most “dimensional” (many dimensions possible)
+    - Rows exist only for actual events (can be dense or sparse)
+    - Always includes foreign keys for all dimensions, optional time stamps, degenerate keys
+- **Use Case:**
+    - Maximum flexibility for slicing/dicing transaction data.
+
+### 📅 Periodic Snapshot Fact Tables
+
+- **Grain:**
+    - One row per period (day, week, month, etc.), summarizing all events in that period.
+- **Characteristics:**
+    - Rows inserted for every period, even if no activity (zero/null facts)
+    - Typically contains many facts
+    - Foreign keys are uniformly dense
+- **Use Case:**
+    - Tracking balances, inventories, or other periodic summaries.
+
+### 🏁 Accumulating Snapshot Fact Tables
+
+- **Grain:**
+    - One row per process instance, updated as the process moves through milestones.
+- **Characteristics:**
+    - Suitable for processes with defined start, steps, and end (e.g., order fulfillment)
+    - Includes date foreign keys for each milestone
+    - Rows are updated as process progresses (unlike other fact tables)
+    - May include lag measurements, milestone counters
+- **Use Case:**
+    - Workflow/pipeline tracking (orders, claims, etc.)
+
+### 🗂️ Factless Fact Tables
+
+- **Definition:**
+    - No numeric facts, just the intersection of dimension keys.
+- **Use Cases:**
+    - Recording events without measures (e.g., student attendance)
+    - Analyzing “what didn’t happen” by comparing possible vs. actual events
+- **Structure Example:**
+    
+    
+    | **Date Key** | **Student Key** | **Class Key** | **...** |
+    | --- | --- | --- | --- |
+    | 20240522 | 123 | 456 | ... |
+
+### 📈 Aggregate Fact Tables & OLAP Cubes
+
+- **Aggregate Fact Tables:**
+    - Rollups of atomic fact data for faster queries
+    - Available alongside atomic tables for BI tools to choose the best level (aggregate navigation)
+    - Contain foreign keys to shrunken (aggregated) dimensions
+- **OLAP Cubes:**
+    - Multidimensional aggregates, accessed directly by users
+    - Built similarly to aggregate tables, but optimized for user interaction
+
+> 🏎️ Aggregates = Indexes for your data warehouse: they boost performance but are not directly queried by users.
+> 
+
+### 🧩 Consolidated Fact Tables
+
+- **Purpose:**
+    - Combine facts from multiple processes at the same grain (e.g., sales actuals + forecasts).
+- **Benefits:**
+    - Simplifies cross-process analysis (e.g., actual vs. forecast)
+    - Reduces complexity for BI tools
+- **Trade-off:**
+    - Increases ETL complexity, but eases analytic burden.
+
+### 📝 Summary Table
+
+| **Fact Table Type** | **Grain** | **Update Pattern** | **Typical Use Case** |
+| --- | --- | --- | --- |
+| Transaction | Event | Insert only | Sales, Orders, Payments |
+| Periodic Snapshot | Period (e.g., day) | Insert only | Inventory, Account Balances |
+| Accumulating Snapshot | Process instance | Update as process | Order Fulfillment, Claims |
+| Factless | Event (no measures) | Insert only | Attendance, Event Participation |
+| Aggregate | Summarized | Insert/refresh | Performance Optimization |
+| Consolidated | Multiple processes | Insert/update | Actuals vs. Forecasts |
+
+## 🚦 Key Points
+
+- Fact tables are the **core** of dimensional models, holding numeric facts and foreign keys.
+- Choose the right fact table type for your business process and analytic needs.
+- Design for performance (aggregates), flexibility (atomic grain), and clarity (conformed facts).
+- Avoid nulls in foreign keys; use default dimension rows instead.
+- Factless tables and consolidated tables are powerful tools for special analytic scenarios.
