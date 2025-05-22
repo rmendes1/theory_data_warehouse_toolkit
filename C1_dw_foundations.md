@@ -502,7 +502,7 @@ Dimensional modeling is a powerful approach for data warehousing, but several pe
 ### 🚫 Myth 3: Dimensional Models are Not Scalable
 
 - **Reality:**  
-  Dimensional models are highly scalable-fact tables with billions or even trillions of rows are common. Modern database technology is optimized for these structures, ensuring performance at scale[1][3].
+  Dimensional models are highly scalable-fact tables with billions or even trillions of rows are common. Modern database technology is optimized for these structures, ensuring performance at scale.
 
 | ❌ Myth         | ✅ Fact                                                                 |
 |----------------|--------------------------------------------------------------------------|
@@ -511,7 +511,7 @@ Dimensional modeling is a powerful approach for data warehousing, but several pe
 ### 🚫 Myth 4: Dimensional Models are Only for Predictable Usage
 
 - **Reality:**  
-  Dimensional models should be designed around stable measurement events, not predefined reports. Their flexibility comes from storing data at the lowest level of detail, supporting both current and future, unpredictable analytic needs[1][3][8].
+  Dimensional models should be designed around stable measurement events, not predefined reports. Their flexibility comes from storing data at the lowest level of detail, supporting both current and future, unpredictable analytic needs.
 
 | ❌ Myth         | ✅ Fact                                                                 |
 |----------------|--------------------------------------------------------------------------|
@@ -520,7 +520,7 @@ Dimensional modeling is a powerful approach for data warehousing, but several pe
 ### 🚫 Myth 5: Dimensional Models Can’t Be Integrated
 
 - **Reality:**  
-  Dimensional models can be fully integrated across the enterprise by using conformed dimensions-centralized, standardized definitions reused across models. This ensures semantic consistency and enables seamless data integration[1][3][7].
+  Dimensional models can be fully integrated across the enterprise by using conformed dimensions-centralized, standardized definitions reused across models. This ensures semantic consistency and enables seamless data integration.
 
 | ❌ Myth         | ✅ Fact                                                                 |
 |----------------|--------------------------------------------------------------------------|
