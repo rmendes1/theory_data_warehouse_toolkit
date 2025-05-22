@@ -393,6 +393,18 @@ GROUP BY
     store.district_name,
     product.brand
 ```
+
+| district\_name | brand     | Sales Dollars |
+| -------------- | --------- | ------------- |
+| North District | Coca-Cola | 125,000.50    |
+| North District | Pepsi     | 98,450.75     |
+| South District | Nestlé    | 74,320.00     |
+| East District  | Kellogg's | 56,110.25     |
+| West District  | Unilever  | 88,900.00     |
+| South District | Coca-Cola | 63,200.10     |
+| East District  | Pepsi     | 45,600.00     |
+| West District  | Nestlé    | 59,780.30     |
+
 ## 🏢 Components of a Data Warehouse
 
 A modern data warehouse is structured into four main components, each with a distinct role in the data lifecycle:
