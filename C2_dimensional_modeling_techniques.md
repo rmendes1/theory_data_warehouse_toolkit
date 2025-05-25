@@ -222,7 +222,7 @@ Dimensional models are designed for resilience and easy extension:
 | Aggregate | Summarized | Insert/refresh | Performance Optimization |
 | Consolidated | Multiple processes | Insert/update | Actuals vs. Forecasts |
 
-## 🚦 Key Points
+### 🚦 Key Points
 
 - Fact tables are the **core** of dimensional models, holding numeric facts and foreign keys.
 - Choose the right fact table type for your business process and analytic needs.
