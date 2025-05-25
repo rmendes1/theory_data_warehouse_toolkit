@@ -447,10 +447,101 @@ Dimensional models are designed for resilience and easy extension:
     - Identifies stakeholders for collaborative design sessions.
     - Ensures the right business groups are involved in each project.
       
-## 🚦 Key Points
+### 🚦 Key Points
 
 - **Conformed dimensions** are the foundation of cross-process integration in dimensional modeling.
 - **Shrunken dimensions** enable aggregation and higher-level analysis.
 - **Drilling across** allows seamless, multi-fact-table analysis using conformed attributes.
 - **Bus architecture and matrices** provide structure, clarity, and agility for enterprise DW/BI development.
 - **Stakeholder mapping** ensures business alignment and buy-in for each process-centric project.
+
+## Dealing with Slowly Changing Dimension Attributes
+
+### 🕰️ What Are Slowly Changing Dimensions (SCDs)?
+
+- **Definition:**
+    
+    Dimension attributes that change over time, often unpredictably, but less frequently than fact table entries.
+    
+- **Challenge:**
+    
+    Preserve historical accuracy and data integrity while supporting current and historical analysis.
+
+### 🧩 SCD Types Explained
+
+#### 🟢 Type 0: Retain Original
+
+- **Approach:** Attribute value never changes. Facts are always grouped by the original value.
+- **Use Case:** “Original” fields (e.g., original credit score, durable identifier), most date dimension attributes.
+
+#### 🟡 Type 1: Overwrite
+
+- **Approach:** Overwrite old value with the new one; no history is kept.
+- **Effect:** Always shows the most recent value; destroys historical context.
+- **Use Case:** Correcting errors, attributes where only the current value matters (e.g., correcting a misspelled name).
+
+> ⚠️ Recompute aggregates and cubes if Type 1 changes affect them, since history is lost.
+> 
+
+#### 🟠 Type 2: Add New Row
+
+- **Approach:** Insert a new row in the dimension table for each change, with a new surrogate key.
+- **Implementation:**
+    - Fact tables reference the current surrogate key at the time of the event.
+    - Add columns: effective date, expiration date, and current row indicator.
+- **Effect:** Preserves full history of changes; supports “as-was” reporting.
+- **Use Case:** Tracking customer address changes, product reclassifications.
+
+#### 🟣 Type 3: Add New Attribute
+
+- **Approach:** Add a new column to store the previous value; main attribute is overwritten.
+- **Effect:** Supports limited history (usually just one previous value).
+- **Use Case:** When only the current and one previous value are needed (e.g., current and previous department).
+
+#### 🔵 Type 4: Add Mini-Dimension
+
+- **Approach:** Move rapidly changing or frequently used attributes to a separate mini-dimension table.
+- **Implementation:**
+    - Both the base dimension and mini-dimension keys are stored in the fact table.
+- **Effect:** Efficiently handles volatile attributes; reduces size and update frequency of the main dimension.
+- **Use Case:** Customer demographics, frequent status changes.
+
+#### 🟤 Type 5: Mini-Dimension + Type 1 Outrigger
+
+- **Approach:** Combine Type 4 mini-dimension with a Type 1 reference in the base dimension.
+- **Implementation:**
+    - The base dimension includes a current profile reference (Type 1) to the mini-dimension.
+    - ETL must update this reference on change.
+- **Effect:** Allows querying both historical and current mini-dimension values directly.
+- **Use Case:** Need to report facts by both current and historical attribute values.
+
+#### 🟠 Type 6: Type 1 Attributes on Type 2 Dimension
+
+- **Approach:** Hybrid of Types 1, 2, and 3.
+- **Implementation:**
+    - Type 2 row versioning for full history.
+    - Type 1 attributes for current values, updated across all rows for a durable key.
+- **Effect:** Supports filtering/grouping by either current or historical attribute values.
+- **Use Case:** When both “as-was” and “as-is” reporting are required.
+
+#### ⚫ Type 7: Dual Type 1 and Type 2 Dimensions
+
+- **Approach:** Fact table contains both the surrogate key (Type 2) and durable key (Type 1).
+- **Implementation:**
+    - Join via surrogate key for historical view; join via durable key for current view.
+    - Separate BI views for each perspective.
+- **Effect:** Supports both “as-was” and “as-is” reporting in a flexible way.
+- **Use Case:** Advanced analytics needing both perspectives.
+
+
+## 📝 SCD Types Cheat Sheet
+| **Type** | **History Preserved** | **How?** | **When to Use** |
+| --- | --- | --- | --- |
+| 0 | Yes | Never update | Immutable/original attributes |
+| 1 | No | Overwrite | Only current value matters |
+| 2 | Yes | New row per change | Full change history needed |
+| 3 | Partial | Add new attribute (side-by-side) | Only one prior value needed |
+| 4 | Yes | Mini-dimension for volatile attributes | Rapidly changing or frequently used attrs |
+| 5 | Yes + Current | Mini-dimension + Type 1 outrigger | Need both current and historical context |
+| 6 | Yes + Current | Type 1 attrs on Type 2 dimension | Hybrid: historical & current analysis |
+| 7 | Yes + Current | Dual keys for Type 1 & 2 | Both “as-was” and “as-is” reporting |
