@@ -545,3 +545,124 @@ Dimensional models are designed for resilience and easy extension:
 | 5 | Yes + Current | Mini-dimension + Type 1 outrigger | Need both current and historical context |
 | 6 | Yes + Current | Type 1 attrs on Type 2 dimension | Hybrid: historical & current analysis |
 | 7 | Yes + Current | Dual keys for Type 1 & 2 | Both “as-was” and “as-is” reporting |
+
+## Dealing with Dimension Hierarchies
+
+### 🏛️ What Are Dimension Hierarchies?
+
+- **Definition:**
+    
+    Hierarchies in dimensions represent structured relationships among attributes (e.g., Product → Brand → Category → Department).
+    
+- **Purpose:**
+    
+    Enable users to drill down or roll up data for analysis at various levels of detail.
+
+### 🟩 Fixed Depth Positional Hierarchies
+
+- **Description:**
+    - Series of many-to-one relationships with a set number of levels and agreed-upon names.
+    - Example: Product → Brand → Category → Department.
+- **Modeling Approach:**
+    - Each level appears as a separate column (attribute) in the dimension table.
+- **Benefits:**
+    - Easiest to understand and navigate.
+    - Delivers predictable, fast query performance.
+- **When to Use:**
+    - When hierarchy levels are consistent and well-defined.
+ 
+| Product_Key | Product_Name | Brand     | Category   | Department |
+|-------------|-------------|-----------|------------|------------|
+| 1           | Widget A    | Acme      | Gadgets    | Hardware   |
+| 2           | Widget B    | Acme      | Gadgets    | Hardware   |
+| 3           | Gizmo X     | BetaCorp  | Tools      | Hardware   |
+| 4           | App Z       | SoftInc   | Software   | Digital    |
+
+  
+### 🟨 Slightly Ragged/Variable Depth Hierarchies
+
+- **Description:**
+    - Hierarchies with a small, variable number of levels (e.g., geographic hierarchies with 3–6 levels).
+- **Modeling Approach:**
+    - Use columns for the maximum number of levels, leave unused levels blank or with a default value.
+    - Populate columns based on business rules (leave unused levels blank or with a default value).
+- **Benefits:**
+    - Avoids complexity of more advanced hierarchical solutions.
+- **When to Use:**
+    - When depth varies slightly, but not unpredictably.
+     
+| Location_Key | Country   | State     | City        | Neighborhood  |
+|--------------|-----------|-----------|-------------|---------------|
+| 1            | USA       | Texas     | Houston     | Midtown       |
+| 2            | USA       | Texas     | Houston     |               |
+| 3            | USA       |           | Washington  | Capitol Hill  |
+| 4            | Canada    | Ontario   | Toronto     |               |
+| 5            | France    |           | Paris       |               |
+
+
+### 🟧 Ragged/Variable Depth Hierarchies with Hierarchy Bridge Tables
+
+- **Description:**
+    - Hierarchies where the number of levels is highly variable or unknown, and relationships may be recursive (parent/child).
+- **Modeling Approach:**
+    - Use a **bridge table**: a separate table that stores all possible paths in the hierarchy.
+    - Each row in the bridge table represents a relationship or path between nodes.
+- **Benefits:**
+    - Supports alternative hierarchies, shared ownership, and time-varying structures.
+    - Enables all forms of hierarchy traversal with standard SQL—no special extensions required.
+- **When to Use:**
+    - For complex, deeply nested, or recursive hierarchies.
+ 
+**Employee Dimension**
+
+| Employee_Key | Employee_Name | Title       |
+|--------------|--------------|--------------|
+| 1            | Alice        | CEO          |
+| 2            | Bob          | VP           |
+| 3            | Carol        | Manager      |
+| 4            | Dave         | Analyst      |
+
+**Employee Bridge Table**
+
+| Ancestor_Employee_Key | Descendant_Employee_Key | Levels_From_Ancestor |
+|----------------------|-------------------------|---------------------|
+| 1                    | 2                       | 1                   |
+| 1                    | 3                       | 2                   |
+| 1                    | 4                       | 3                   |
+| 2                    | 3                       | 1                   |
+| 2                    | 4                       | 2                   |
+| 3                    | 4                       | 1                   |
+
+
+## 🟦 Ragged/Variable Depth Hierarchies with Pathstring Attributes
+
+- **Description:**
+    - Encode the full hierarchical path as a text string in a single column for each dimension row.
+- **Modeling Approach:**
+    - Each row’s pathstring shows the full lineage from the top node to the current node (e.g., “Dept>Category>Brand>Product”).
+    - Add a Pathstring column to the dimension table, encoding the full path from the root to each node.
+- **Benefits:**
+    - Simplifies many hierarchy analysis queries using standard SQL.
+- **Limitations:**
+    - Not suitable for alternative or shared hierarchies.
+    - Vulnerable to changes in hierarchy structure (may require relabeling all paths).
+- **When to Use:**
+    - For simple, single-path ragged hierarchies where performance and flexibility are less critical.
+      
+| OrgUnit_Key | OrgUnit_Name      | Pathstring                      |
+|-------------|------------------|----------------------------------|
+| 1           | Company          | Company                          |
+| 2           | Division A       | Company>Division A               |
+| 3           | Dept X           | Company>Division A>Dept X        |
+| 4           | Team 1           | Company>Division A>Dept X>Team 1 |
+| 5           | Division B       | Company>Division B               |
+| 6           | Dept Y           | Company>Division B>Dept Y        |
+
+## 📝 Summary Table
+
+| Hierarchy Type | Modeling Approach | Pros | Cons / Limitations | When to Use |
+| --- | --- | --- | --- | --- |
+| Fixed Depth Positional | Separate columns for each level | Simple, fast, user-friendly | Inflexible for variable-depth hierarchies | Consistent, agreed-upon hierarchies |
+| Slightly Ragged/Variable Depth | Max columns, fill as needed | Avoids complexity | Some empty columns, not scalable | Small range of levels |
+| Ragged/Variable Depth (Bridge) | Hierarchy bridge table | Flexible, supports all traversals | More complex design and queries | Deep/recursive/complex hierarchies |
+| Ragged/Variable Depth (Pathstring) | Encoded pathstring attribute | Simple SQL queries | No alt/shared hierarchies, relabeling | Simple, single-path ragged hierarchies |
